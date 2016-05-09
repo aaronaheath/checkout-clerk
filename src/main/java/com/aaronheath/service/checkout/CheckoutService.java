@@ -49,17 +49,22 @@ public interface CheckoutService {
 			int curVolumeLimit = categoryProduct.getVolumeLimit();
 			int totalProducts = prods.size();
 			double discountPrice = (categoryProduct.getVolumePrice() / curVolumeLimit);
-			if (totalProducts >= curVolumeLimit) {
-				logger.debug("divide " + curVolumeLimit % totalProducts);
-				totalDiscountItems = curVolumeLimit % totalProducts ;
+			if (curVolumeLimit > 0) {
+				totalDiscountItems = (totalProducts / curVolumeLimit) * curVolumeLimit  ;
 			}
-			
 			
 			logger.debug("	totalDiscountItems " + 	totalDiscountItems + "totalProducts " + totalProducts);
 			if (totalDiscountItems > 0 && discountPrice > 0) {
 				discountTotal = discountPrice * totalDiscountItems;
 			}
-			int fullPriceItems = (totalProducts - totalDiscountItems);
+			int fullPriceItems = 0;
+			if (curVolumeLimit > 0) {
+				fullPriceItems = totalProducts % curVolumeLimit;
+			}
+			else {
+				fullPriceItems = totalProducts;
+			}
+			
 			if (fullPriceItems > 0) {
 				regularPrice =  fullPriceItems * categoryProduct.getUnitPrice();
 				logger.debug("fullPriceItems " + fullPriceItems);
@@ -71,9 +76,10 @@ public interface CheckoutService {
 			
 			
 			totalPrice += discountTotal + regularPrice;
-			logger.debug("TOTAL : " + totalPrice);
+			
 		
 		}
+		logger.debug("TOTAL : " + totalPrice);
 		return totalPrice;
 	}
 	
