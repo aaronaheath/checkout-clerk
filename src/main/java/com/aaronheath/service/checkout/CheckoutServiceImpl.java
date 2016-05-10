@@ -4,6 +4,7 @@
 package com.aaronheath.service.checkout;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,8 @@ public class CheckoutServiceImpl implements CheckoutService {
 	@Override
 	public void calculateTotal(List<Product> cartItems) {
 		if (cartItems != null && ! cartItems.isEmpty()) {
+			//sort items by productCode to help with grouping
+			Collections.sort(cartItems);
 			double totalPrice = 0;
 			for (int i = 0; i < cartItems.size(); i++) {
 				double discountTotal = 0;
@@ -83,7 +86,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 				//Filter out all products by product code
 				List<Product> prods = (List<Product>) cartItems.stream().filter(prod -> prod.getProductCode() == curItem.getProductCode()).collect(Collectors.toList());
 				if (prods != null && ! prods.isEmpty()) {
-					//Remove filtered items from cartItems list.
+					//Skip over filtered items in the loop.
 					i += prods.size() -1;
 					
 					Product categoryProduct = prods.get(0);

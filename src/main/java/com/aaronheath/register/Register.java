@@ -34,20 +34,23 @@ public class Register {
 		CheckoutService register = CheckoutServiceFactory.getCheckoutService();
 		
 		try {
-			JSONArray priceJson = JSONUtils.toJSONArray(register.getPriceData());
+			//Get priceData as JSONArray
+			register.setPricing(JSONUtils.toJSONArray(register.getPriceData()));
 			List<Product> scannedItems = new ArrayList<Product>();	
-			register.setPricing(priceJson);
+			
+			// order data
 			String[] codes = "C,C,C,C,C,C,C".split(",");
 			//String[] codes = "A,B,C,D".split(",");
 			//String[] codes = "A,B,C,D,A,B,A,A".split(",");
 			
+			// scan each item in the order
 			for (String codeStr : codes) {
 				Product curProd = register.scan(codeStr.charAt(0));
 				scannedItems.add(curProd);
 			}
 			if (scannedItems != null && ! scannedItems.isEmpty()) {
-			    Collections.sort(scannedItems);
-			    register.calculateTotal(scannedItems);
+				//calculate total & printReceipt
+				register.calculateTotal(scannedItems);
 				String receiptStr = register.printReceipt();
 				logger.debug("receiptStr " + receiptStr);
 			}

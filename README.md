@@ -33,3 +33,5 @@ TEST 3: Items ABCD Total $15.40
 
 __CheckoutService__
 To help keep the data & state sharing to a minimum I changed the scan mentod from a void to retuning a Product object. Print Receipt was changed from a char to a String - this was done to simplify the testing of the method.
+
+__Setup__ A default method getPriceData was added to the CheckoutService Interface - this method will load priceData in from a CSV file (checkout-clerk/data/price_file.csv). This metod could use some better error handling / data validation.
