@@ -37,3 +37,5 @@ To help keep the data & state sharing to a minimum I changed the scan mentod fro
 __Setup__ A default method getPriceData was added to the CheckoutService Interface - this method will load priceData in from a CSV file (checkout-clerk/data/price_file.csv). This metod could use some better error handling / data validation.
 
 __Testing__ There is one Until test that is run during compile time: The testCalculate method in RegisterTest.java. This test is actually not very adequate, but it's a start. I would like to go back and write a test for each method, and not only test the String value that is returned by printReceipt.
+
+__Building with Maven__ run mvn clean package to run tests & generate the checkout-clerk.jar. Jave 8 is required.
