@@ -7,18 +7,15 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
 import com.aaronheath.register.product.Product;
 import com.aaronheath.register.utils.JSONUtils;
-
 
 
 /**
@@ -28,64 +25,15 @@ import com.aaronheath.register.utils.JSONUtils;
 public interface CheckoutService {
 	
 	static Logger logger = Logger.getLogger(CheckoutService.class);
-	
 	void setPricing(JSONArray priceData);
 	//TODO was void
 	Product scan(char code);
-	void printReceipt();
+	String printReceipt();
+	void calculateTotal(List<Product> cartItems);
 	
-	default double calculateTotal(List<Product> cartItems) {
-		double totalPrice = 0;
-		Collections.sort(cartItems);
-		for (int i = 0; i < cartItems.size(); i++) {
-			int totalDiscountItems = 0;
-			double discountTotal = 0;
-			double regularPrice = 0;
-			Product curItem = cartItems.get(i);
-			List<Product> prods = (List<Product>) cartItems.stream().filter(prod -> prod.getProductCode() == curItem.getProductCode()).collect(Collectors.toList());
-			i += prods.size() -1;
-			Product categoryProduct = prods.get(0);
-			logger.debug("categoryProduct " + categoryProduct.getProductCode());
-			int curVolumeLimit = categoryProduct.getVolumeLimit();
-			int totalProducts = prods.size();
-			double discountPrice = (categoryProduct.getVolumePrice() / curVolumeLimit);
-			if (curVolumeLimit > 0) {
-				totalDiscountItems = (totalProducts / curVolumeLimit) * curVolumeLimit  ;
-			}
-			
-			logger.debug("	totalDiscountItems " + 	totalDiscountItems + "totalProducts " + totalProducts);
-			if (totalDiscountItems > 0 && discountPrice > 0) {
-				discountTotal = discountPrice * totalDiscountItems;
-			}
-			int fullPriceItems = 0;
-			if (curVolumeLimit > 0) {
-				fullPriceItems = totalProducts % curVolumeLimit;
-			}
-			else {
-				fullPriceItems = totalProducts;
-			}
-			
-			if (fullPriceItems > 0) {
-				regularPrice =  fullPriceItems * categoryProduct.getUnitPrice();
-				logger.debug("fullPriceItems " + fullPriceItems);
-			}
-			
-		
-			logger.debug(" discountTotal " +  discountTotal );
-			logger.debug("regular price " +  regularPrice); 
-			
-			
-			totalPrice += discountTotal + regularPrice;
-			
-		
-		}
-		logger.debug("TOTAL : " + totalPrice);
-		return totalPrice;
-	}
-	
+	//default method for getting current price data from a file
 	default String getPriceData() throws IOException {
 		String priceData = null;
-		
 		String csvFile = "./data/price_file.csv";
 		BufferedReader br = null;
 		String line = "";
@@ -114,16 +62,15 @@ public interface CheckoutService {
 			
 		}
 		catch (IOException e) {
-			logger.error("Error getting price data");
+			logger.error("Error getting price data: ", e);
 			throw e;
 		}
 		finally {
 			br.close();
+			br = null;
 		}
-		
 		
 		return priceData;
 		
 	}
-	
 }

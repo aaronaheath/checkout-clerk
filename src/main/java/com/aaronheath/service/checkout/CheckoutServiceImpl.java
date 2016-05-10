@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
+import com.aaronheath.register.product.Order;
 import com.aaronheath.register.product.Product;
 
 /**
@@ -23,7 +25,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 	private static Logger logger = Logger.getLogger(CheckoutServiceImpl.class);
 	
 	private Map<Character, Product> productList;
-	private List<Product> cartItems;
+	private Order currentOrder;;
 
 	@Override
 	public void setPricing(JSONArray priceData) {
@@ -40,8 +42,6 @@ public class CheckoutServiceImpl implements CheckoutService {
 			}
 			
 		}
-		
-		
 	}
 
 	@Override
@@ -52,13 +52,72 @@ public class CheckoutServiceImpl implements CheckoutService {
 		}
 		
 		return cartItem;
-		
 	}
 
 	@Override
-	public void printReceipt() {
-		// TODO Auto-generated method stub
+	public String printReceipt() {
+		String receiptStr = null;
+		if (this.currentOrder != null) {
+			List<Product> curProducts = this.currentOrder.getItems();
+			if (curProducts != null && ! curProducts.isEmpty()) {
+				receiptStr = "Items ";
+				for (Product curProd : curProducts) {
+					receiptStr += curProd.getProductCode();
+				}
+				
+				receiptStr += " Total $" + this.currentOrder.getTotalPrice();
+				
+			}
+			
 		
+		}
+		
+		return receiptStr;
+	}
+
+	@Override
+	public void calculateTotal(List<Product> cartItems) {
+		if (cartItems != null && ! cartItems.isEmpty()) {
+			double totalPrice = 0;
+			for (int i = 0; i < cartItems.size(); i++) {
+				double discountTotal = 0;
+				Product curItem = cartItems.get(i);
+				
+				//Filter out all products by product code
+				List<Product> prods = (List<Product>) cartItems.stream().filter(prod -> prod.getProductCode() == curItem.getProductCode()).collect(Collectors.toList());
+				if (prods != null && ! prods.isEmpty()) {
+					//Remove filtered items from cartItems list.
+					i += prods.size() -1;
+					
+					Product categoryProduct = prods.get(0);
+					int curVolumeLimit = categoryProduct.getVolumeLimit();
+					int totalProducts = prods.size();
+					// current volume item price
+					double discountPrice = (categoryProduct.getVolumePrice() / curVolumeLimit);
+					
+					if (curVolumeLimit > 0) {
+						// total items eligible for volume price discount
+						int totalDiscountItems = (totalProducts / curVolumeLimit) * curVolumeLimit  ;
+						if (totalDiscountItems > 0 && discountPrice > 0) {
+							discountTotal = discountPrice * totalDiscountItems;
+						}
+					}
+						
+					// determine # of full price items 
+					int fullPriceItems = totalProducts;
+					if (curVolumeLimit > 0) {
+						fullPriceItems = totalProducts % curVolumeLimit;
+					}
+					double regularPrice = fullPriceItems * categoryProduct.getUnitPrice();
+					totalPrice += discountTotal + regularPrice;
+				
+				}
+			}	
+			//Setting current order for receipt
+			this.currentOrder = new Order();
+			this.currentOrder.setItems(cartItems);
+			this.currentOrder.setTotalPrice(totalPrice);
+		}
 	}
 
 }
