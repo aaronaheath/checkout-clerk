@@ -35,3 +35,5 @@ __CheckoutService__
 To help keep the data & state sharing to a minimum I changed the scan mentod from a void to retuning a Product object. Print Receipt was changed from a char to a String - this was done to simplify the testing of the method.
 
 __Setup__ A default method getPriceData was added to the CheckoutService Interface - this method will load priceData in from a CSV file (checkout-clerk/data/price_file.csv). This metod could use some better error handling / data validation.
+
+__Testing__ There is one Until test that is run during compile time: The testCalculate method in RegisterTest.java. This test is actually not very adequate, but it's a start. I would like to go back and write a test for each method, and not only test the String value that is returned by printReceipt.
