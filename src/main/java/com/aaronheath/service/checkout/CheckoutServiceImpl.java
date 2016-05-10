@@ -66,10 +66,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 				}
 				
 				receiptStr += " Total $" + this.currentOrder.getTotalPrice();
-				
 			}
-			
-		
 		}
 		
 		return receiptStr;
